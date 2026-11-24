@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Currículo Profissional Anti-Robô</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #F3F4F6; color: #111827; margin: 0; padding: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; }
+    .form-box { flex: 1; min-width: 320px; background: #FFF; padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .form-box h1 { font-size: 20px; margin: 0 0 6px 0; color: #1E3A8A; }
+    .form-box p { font-size: 13px; color: #6B7280; margin: 0 0 20px 0; }
+    label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #374151; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px; margin-bottom: 14px; }
+    input:focus, textarea:focus { outline: none; border-color: #1E3A8A; }
+    textarea { resize: vertical; min-height: 75px; }
+    .btn-primary { width: 100%; background: #16A34A; color: #FFF; border: none; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn-primary:hover { background: #15803D; }
+    .btn-primary:disabled { background: #9CA3AF; cursor: not-allowed; }
+    .preview-box { flex: 1; min-width: 320px; position: relative; }
+    .a4-sheet { background: #FFF; padding: 32px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); min-height: 580px; position: relative; overflow: hidden; }
+    .cv-header { border-bottom: 2px solid #1E3A8A; padding-bottom: 12px; margin-bottom: 16px; }
+    .cv-name { font-size: 22px; font-weight: 800; text-transform: uppercase; color: #111827; margin: 0; }
+    .cv-role { font-size: 14px; font-weight: 700; color: #1E3A8A; margin: 4px 0; }
+    .cv-contact { font-size: 11px; color: #6B7280; }
+    .cv-section-title { font-size: 11px; font-weight: 700; color: #1E3A8A; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #E5E7EB; padding-bottom: 4px; margin: 16px 0 8px 0; }
+    .cv-text { font-size: 12px; color: #374151; line-height: 1.5; white-space: pre-line; }
+    .blur-area { filter: blur(5px); user-select: none; opacity: 0.6; transition: 0.4s; }
+    .unlocked .blur-area { filter: none; opacity: 1; }
+    .lock-overlay { position: absolute; bottom: 0; left: 0; right: 0; height: 65%; background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.96) 35%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+    .unlocked .lock-overlay { display: none; }
+    .badge { background: #DBEAFE; color: #1E40AF; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+    .modal-content { background: #FFF; padding: 24px; border-radius: 12px; max-width: 400px; width: 100%; text-align: center; }
+    .qr-img { width: 200px; height: 200px; margin: 12px auto; border: 1px solid #E5E7EB; border-radius: 8px; }
+    .copy-box { background: #F3F4F6; padding: 8px; border-radius: 6px; font-size: 11px; word-break: break-all; margin-bottom: 12px; color: #374151; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- FORMULÁRIO -->
+  <div class="form-box">
+    <h1>Monte seu Currículo Profissional</h1>
+    <p>Preencha com suas palavras. Nossa IA corrige o português e formata no padrão aprovado pelo RH.</p>
+
+    <label>Seu Nome Completo *</label>
+    <input type="text" id="nome" placeholder="Ex: João da Silva" oninput="atualizarPrevia()">
+
+    <label>Vaga ou Área Pretendida *</label>
+    <input type="text" id="cargo" placeholder="Ex: Auxiliar Administrativo / Vendedor" oninput="atualizarPrevia()">
+
+    <label>Cidade e Bairro *</label>
+    <input type="text" id="cidade" placeholder="Ex: Gravataí - RS" oninput="atualizarPrevia()">
+
+    <label>WhatsApp com DDD *</label>
+    <input type="text" id="telefone" placeholder="Ex: (51) 99999-9999" oninput="atualizarPrevia()">
+
+    <label>Seu E-mail (para receber o PDF) *</label>
+    <input type="email" id="email" placeholder="seuemail@gmail.com" oninput="atualizarPrevia()">
+
+    <label>Sobre você (escreva do seu jeito)</label>
+    <textarea id="resumo" placeholder="Ex: Sou pontual, aprendo rápido, tenho experiência com atendimento ao público..." oninput="atualizarPrevia()"></textarea>
+
+    <label>Experiências Anteriores (Empresa, cargo e o que fazia)</label>
+    <textarea id="experiencias" placeholder="Ex: Trabalhei 2 anos no Mercado X como caixa e repositor..." oninput="atualizarPrevia()"></textarea>
+
+    <label>Escolaridade / Cursos</label>
+    <textarea id="formacao" placeholder="Ex: Ensino Médio Completo - Escola Y (2020)" oninput="atualizarPrevia()"></textarea>
+
+    <label>Habilidades Extras</label>
+    <input type="text" id="habilidades" placeholder="Ex: Excel básico, CNH B, Boa comunicação" oninput="atualizarPrevia()">
+
+    <button class="btn-primary" id="btnGerar" onclick="iniciarPagamento()">Liberar PDF Otimizado (R$ 19,90)</button>
+  </div>
+
+  <!-- PRÉVIA EM TEMPO REAL -->
+  <div class="preview-box" id="previewContainer">
+    <div class="a4-sheet">
+      <div class="cv-header">
+        <div class="cv-name" id="prev-nome">SEU NOME COMPLETO</div>
+        <div class="cv-role" id="prev-cargo">Cargo Pretendido</div>
+        <div class="cv-contact" id="prev-contato">Cidade - UF | (00) 00000-0000 | email@exemplo.com</div>
+      </div>
+
+      <div class="cv-section-title">Resumo Profissional</div>
+      <div class="cv-text" id="prev-resumo">Profissional dedicado e focado em resultados, com facilidade de aprendizado e excelente relacionamento interpessoal...</div>
+
+      <div class="blur-area">
+        <div class="cv-section-title">Experiência Profissional</div>
+        <div class="cv-text" id="prev-exp">• Otimização de rotinas diárias e atendimento focado na satisfação do cliente.&#10;• Organização de estoque, controle de planilhas e suporte direto à equipe.</div>
+
+        <div class="cv-section-title">Formação Acadêmica</div>
+        <div class="cv-text" id="prev-form">Ensino Médio Completo — Instituição de Ensino</div>
+
+        <div class="cv-section-title">Competências e Habilidades</div>
+        <div class="cv-text" id="prev-hab">Comunicação Assertiva • Pacote Office • Trabalho em Equipe • Proatividade</div>
+      </div>
+
+      <!-- CAMADA DE BLOQUEIO -->
+      <div class="lock-overlay">
+        <span class="badge">✨ PRÉVIA EM TEMPO REAL</span>
+        <strong style="font-size: 16px; margin-bottom: 6px;">Seu currículo está pronto para ser gerado!</strong>
+        <p style="font-size: 12px; color: #4B5563; margin: 0 0 14px 0;">A IA vai reescrever suas experiências com palavras-chave de RH, gerar o PDF limpo e entregar a mensagem pronta para enviar ao recrutador.</p>
+        <button class="btn-primary" style="max-width: 260px;" onclick="iniciarPagamento()">Desbloquear Agora • R$ 19,90</button>
+      </div>
+    </div>
+
+    <!-- ÁREA DE DOWNLOAD PÓS-PAGAMENTO -->
+    <div id="areaSucesso" style="display: none; background: #ECFDF5; border: 1px solid #10B981; padding: 20px; border-radius: 10px; margin-top: 16px;">
+      <strong style="color: #065F46; font-size: 16px;">🎉 Pagamento confirmado! Seu currículo está pronto:</strong>
+      <p style="font-size: 13px; color: #047857; margin: 8px 0;">Também enviamos uma cópia para o seu e-mail.</p>
+      <a id="linkDownloadPdf" href="#" target="_blank" class="btn-primary" style="display: inline-block; text-align: center; text-decoration: none; margin-bottom: 12px;">📥 Baixar Currículo em PDF</a>
+
+      <label style="color: #065F46;">Mensagem pronta para colar no WhatsApp do recrutador:</label>
+      <textarea id="textoRecrutadorFinal" readonly style="background: #FFF; font-size: 12px;"></textarea>
+      <button onclick="copiarTextoRecrutador()" style="background: #059669; color: #FFF; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px;">Copiar Mensagem</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PIX -->
+<div class="modal" id="modalPix">
+  <div class="modal-content">
+    <h3 style="margin: 0 0 6px 0;">Pague com Pix para liberar</h3>
+    <p style="font-size: 12px; color: #6B7280; margin: 0;">Assim que você pagar, o PDF libera automaticamente nesta tela em segundos.</p>
+    <img id="imgQrCode" class="qr-img" src="" alt="QR Code Pix">
+    <div class="copy-box" id="txtPixCopiaCola">Gerando código...</div>
+    <button class="btn-primary" onclick="copiarPix()">Copiar Código Pix</button>
+    <p id="statusPagamento" style="font-size: 12px; color: #D97706; font-weight: bold; margin-top: 12px;">⏳ Aguardando confirmação do banco...</p>
+  </div>
+</div>
+
+<script>
+  // COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT IMPLANTADO
+  const APPS_SCRIPT_URL = "COLE_SUA_URL_DO_WEB_APP_AQUI";
+  let intervaloChecagem = null;
+
+  function atualizarPrevia() {
+    document.getElementById("prev-nome").innerText = document.getElementById("nome").value || "SEU NOME COMPLETO";
+    document.getElementById("prev-cargo").innerText = document.getElementById("cargo").value || "Cargo Pretendido";
+
+    const cidade = document.getElementById("cidade").value || "Cidade - UF";
+    const tel = document.getElementById("telefone").value || "(00) 00000-0000";
+    const email = document.getElementById("email").value || "email@exemplo.com";
+    document.getElementById("prev-contato").innerText = `${cidade} | ${tel} | ${email}`;
+
+    const resumo = document.getElementById("resumo").value;
+    if (resumo) document.getElementById("prev-resumo").innerText = resumo;
+  }
+
+  async function iniciarPagamento() {
+    const dados = {
+      nome: document.getElementById("nome").value.trim(),
+      cargo: document.getElementById("cargo").value.trim(),
+      cidade: document.getElementById("cidade").value.trim(),
+      telefone: document.getElementById("telefone").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      resumo: document.getElementById("resumo").value.trim(),
+      experiencias: document.getElementById("experiencias").value.trim(),
+      formacao: document.getElementById("formacao").value.trim(),
+      habilidades: document.getElementById("habilidades").value.trim()
+    };
+
+    if (!dados.nome || !dados.cargo || !dados.email) {
+      alert("Por favor, preencha pelo menos Nome, Cargo Pretendido e E-mail.");
+      return;
+    }
+
+    const btn = document.getElementById("btnGerar");
+    btn.disabled = true;
+    btn.innerText = "Gerando Pix...";
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ acao: "criar_pix", dados: dados })
+      });
+      const res = await response.json();
+
+      if (res.sucesso) {
+        document.getElementById("imgQrCode").src = "data:image/png;base64," + res.qrCodeBase64;
+        document.getElementById("txtPixCopiaCola").innerText = res.pixCopiaCola;
+        document.getElementById("modalPix").style.display = "flex";
+        intervaloChecagem = setInterval(() => checarStatus(res.paymentId), 4000);
+      } else {
+        alert("Erro ao gerar Pix. Verifique as chaves no script.");
+      }
+    } catch (e) {
+      alert("Erro de conexão ao gerar Pix.");
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Liberar PDF Otimizado (R$ 19,90)";
+    }
+  }
+
+  async function checarStatus(paymentId) {
+    try {
+      const res = await fetch(`${APPS_SCRIPT_URL}?id=${paymentId}`);
+      const data = await res.json();
+
+      if (data.status === "PAGO") {
+        clearInterval(intervaloChecagem);
+        document.getElementById("modalPix").style.display = "none";
+        document.getElementById("previewContainer").classList.add("unlocked");
+        document.getElementById("areaSucesso").style.display = "block";
+        document.getElementById("linkDownloadPdf").href = data.pdfUrl;
+        document.getElementById("textoRecrutadorFinal").value = data.textoRecrutador;
+      }
+    } catch (e) {
+      console.log("Aguardando confirmação...");
+    }
+  }
+
+  function copiarPix() {
+    const codigo = document.getElementById("txtPixCopiaCola").innerText;
+    navigator.clipboard.writeText(codigo);
+    alert("Código Pix copiado!");
+  }
+
+  function copiarTextoRecrutador() {
+    const txt = document.getElementById("textoRecrutadorFinal").value;
+    navigator.clipboard.writeText(txt);
+    alert("Mensagem copiada! Agora é só colar no WhatsApp do recrutador.");
+  }
+</script>
+
+</body>
+</html>
