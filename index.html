@@ -4,6 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Currículo Profissional Anti-Robô</title>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', 'SEU_PIXEL_ID_AQUI');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=SEU_PIXEL_ID_AQUI&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: #F3F4F6; color: #111827; margin: 0; padding: 20px; }
@@ -135,7 +152,9 @@
 <script>
   // COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT IMPLANTADO
   const APPS_SCRIPT_URL = "COLE_SUA_URL_DO_WEB_APP_AQUI";
+  const VALOR_PRODUTO = 19.90;
   let intervaloChecagem = null;
+  let compraRegistrada = false; // Evita que o evento Purchase dispare mais de uma vez
 
   function atualizarPrevia() {
     document.getElementById("prev-nome").innerText = document.getElementById("nome").value || "SEU NOME COMPLETO";
@@ -180,6 +199,15 @@
       const res = await response.json();
 
       if (res.sucesso) {
+        // DISPARA EVENTO DE INÍCIO DE CHECKOUT NO PIXEL
+        if (typeof fbq === 'function') {
+          fbq('track', 'InitiateCheckout', {
+            value: VALOR_PRODUTO,
+            currency: 'BRL',
+            content_name: 'Curriculo Profissional ATS'
+          });
+        }
+
         document.getElementById("imgQrCode").src = "data:image/png;base64," + res.qrCodeBase64;
         document.getElementById("txtPixCopiaCola").innerText = res.pixCopiaCola;
         document.getElementById("modalPix").style.display = "flex";
@@ -202,6 +230,18 @@
 
       if (data.status === "PAGO") {
         clearInterval(intervaloChecagem);
+
+        // DISPARA EVENTO DE COMPRA APROVADA NO PIXEL (APENAS UMA VEZ)
+        if (!compraRegistrada && typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: VALOR_PRODUTO,
+            currency: 'BRL',
+            content_name: 'Curriculo Profissional ATS',
+            transaction_id: paymentId
+          });
+          compraRegistrada = true;
+        }
+
         document.getElementById("modalPix").style.display = "none";
         document.getElementById("previewContainer").classList.add("unlocked");
         document.getElementById("areaSucesso").style.display = "block";
